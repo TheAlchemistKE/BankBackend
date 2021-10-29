@@ -7,7 +7,7 @@ import (
 	"context"
 )
 
-const createAccount = `-- name: CreateAccount :exec
+const createAccount = `-- name: CreateAccount :one
 INSERT INTO accounts (owner, balance, currency) VALUES ($1, $2, $3) RETURNING id, owner, balance, currency, created_at, updated_at
 `
 
@@ -17,8 +17,26 @@ type CreateAccountParams struct {
 	Currency string `json:"currency"`
 }
 
-func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) error {
-	_, err := q.db.ExecContext(ctx, createAccount, arg.Owner, arg.Balance, arg.Currency)
+func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
+	row := q.db.QueryRowContext(ctx, createAccount, arg.Owner, arg.Balance, arg.Currency)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Balance,
+		&i.Currency,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const deleteAccount = `-- name: DeleteAccount :exec
+DELETE FROM accounts WHERE id = $1
+`
+
+func (q *Queries) DeleteAccount(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteAccount, id)
 	return err
 }
 
@@ -81,4 +99,29 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateAccount = `-- name: UpdateAccount :one
+UPDATE accounts SET currency = $2
+WHERE id = $1
+RETURNING id, owner, balance, currency, created_at, updated_at
+`
+
+type UpdateAccountParams struct {
+	ID       int64  `json:"id"`
+	Currency string `json:"currency"`
+}
+
+func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error) {
+	row := q.db.QueryRowContext(ctx, updateAccount, arg.ID, arg.Currency)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Balance,
+		&i.Currency,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
