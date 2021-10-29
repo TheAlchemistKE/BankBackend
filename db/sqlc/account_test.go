@@ -2,15 +2,16 @@ package db
 
 import (
 	"context"
+	"github.com/TheAlchemistKE/BankBackend/util"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestCreateAccount(t *testing.T) {
 	arg := CreateAccountParams{
-		Owner: "John Doe",
-		Balance: 400,
-		Currency: "USD",
+		Owner: util.RandomOwnerName(),
+		Balance: util.RandomAmount(),
+		Currency: util.RandomCurrency(),
 	}
 	account, err := testQueries.CreateAccount(context.Background(), arg)
 	require.NoError(t, err)

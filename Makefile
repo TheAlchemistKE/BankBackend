@@ -1,4 +1,4 @@
-.PHONY: migrate-up migrate-down sqlc
+.PHONY: migrate-up migrate-down sqlc test
 
 migrate-up:
 	@echo "Migrating DB."
@@ -12,3 +12,6 @@ migrate-down:
 sqlc:
 	@echo "Generating Queries"
 	sqlc generate
+
+test:
+	go test -v -cover ./...
