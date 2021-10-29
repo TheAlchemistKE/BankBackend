@@ -12,14 +12,17 @@ const (
 	dbDriver = "postgres"
 	dbSrc = "postgresql://localhost/bank?user=njeri&password=KelynPNjeri@1998"
 )
+
 var testQueries *Queries
+var testDB *sql.DB
 
 func TestMain(m *testing.M) {
-	conn, err := sql.Open(dbDriver, dbSrc)
+	var err error
+	testDB, err = sql.Open(dbDriver, dbSrc)
 	if err != nil {
 		log.Fatal("DB Connection failed: ", err)
 	}
-	testQueries = New(conn)
+	testQueries = New(testDB)
 
 	os.Exit(m.Run())
 }
